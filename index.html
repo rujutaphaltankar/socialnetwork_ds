@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialGraph | Mini Engine v2.0</title>
+  <meta name="description" content="Social network engine analyzer with graph data structures, BFS traversal, and heap-based friend suggestions.">
+  <link rel="stylesheet" href="index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- ═══════ SIDEBAR ═══════ -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div class="logo-text">
+          <h1>SocialGraph</h1>
+          <span>Mini Engine v2.0</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="section-title">MAIN</span>
+          <button class="nav-item active" data-view="dashboard">
+            <span class="nav-icon">⊞</span> Dashboard
+          </button>
+          <button class="nav-item" data-view="users">
+            <span class="nav-icon">👤</span> Users <span class="badge" id="sidebar-user-count">0</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <span class="section-title">TOOLS</span>
+          <button class="nav-item" data-view="add-friendship">
+            <span class="nav-icon">🤝</span> Add friendship
+          </button>
+          <button class="nav-item" data-view="mutual-friends">
+            <span class="nav-icon">🔍</span> Mutual friends
+          </button>
+          <button class="nav-item" data-view="suggestions">
+            <span class="nav-icon">⭐</span> Suggestions <span class="badge purple" id="sidebar-sugg-count">0</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <span class="section-title">GRAPH</span>
+          <button class="nav-item" data-view="network-graph">
+            <span class="nav-icon">🕸️</span> Network graph
+          </button>
+          <button class="nav-item" data-view="bfs-explorer">
+            <span class="nav-icon">🌐</span> BFS explorer
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="footer-stat"><span class="stat-val" id="foot-users">0</span><span class="stat-lab">Users</span></div>
+        <div class="footer-stat"><span class="stat-val" id="foot-edges">0</span><span class="stat-lab">Edges</span></div>
+        <div class="footer-stat"><span class="stat-val" id="foot-density">0%</span><span class="stat-lab">Density</span></div>
+      </div>
+    </aside>
+
+    <!-- ═══════ MAIN ═══════ -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title" id="current-page-title">Dashboard</div>
+        <div class="search-area">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search users..." id="global-search">
+          </div>
+        </div>
+        <div class="user-profile"><div class="profile-avatar">AL</div></div>
+      </header>
+
+      <!-- ═══════ VIEW: DASHBOARD ═══════ -->
+      <div class="view-container active" id="view-dashboard">
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="card-label">Total users</span>
+            <div class="card-value-row"><span class="card-val" id="stat-total-users">0</span><span class="card-delta pos">+2 this week</span></div>
+            <div class="card-progress blue"></div>
+          </div>
+          <div class="stat-card">
+            <span class="card-label">Friendships</span>
+            <div class="card-value-row"><span class="card-val" id="stat-total-edges">0</span><span class="card-delta pos">+3 this week</span></div>
+            <div class="card-progress green"></div>
+          </div>
+          <div class="stat-card">
+            <span class="card-label">Avg. connections</span>
+            <div class="card-value-row"><span class="card-val" id="stat-avg-conn">0.0</span><span class="card-delta pos">+0.4 this week</span></div>
+            <div class="card-progress turquoise"></div>
+          </div>
+          <div class="stat-card">
+            <span class="card-label">Suggestions made</span>
+            <div class="card-value-row"><span class="card-val" id="stat-sugg-count">4</span><span class="card-delta neg">-1 vs last week</span></div>
+            <div class="card-progress pink"></div>
+          </div>
+        </div>
+
+        <div class="tools-grid">
+          <!-- Add User -->
+          <div class="tool-card animate-in">
+            <div class="card-header"><h2>Add user</h2><span class="tech-badge purple">Hash Table</span></div>
+            <div class="field-group"><label>FULL NAME</label><input type="text" placeholder="e.g. Maya Patel" id="input-full-name"></div>
+            <div class="field-group"><label>USERNAME</label><input type="text" placeholder="@username" id="input-username"></div>
+            <button class="btn btn-outline full-width" id="btn-add-user">Add to network</button>
+            <div class="toast" id="toast-add-user"></div>
+          </div>
+          <!-- Add Friendship -->
+          <div class="tool-card animate-in">
+            <div class="card-header"><h2>Add friendship</h2><span class="tech-badge blue">Graph edge</span></div>
+            <div class="field-group"><label>USER A</label><input type="text" placeholder="Alice" id="input-friend-a"></div>
+            <div class="field-group"><label>USER B</label><input type="text" placeholder="Bob" id="input-friend-b"></div>
+            <div class="btn-row">
+              <button class="btn btn-secondary flex-1" id="btn-clear-friend">Clear</button>
+              <button class="btn btn-primary flex-1" id="btn-add-friend">Connect</button>
+            </div>
+            <div class="toast" id="toast-add-friend"></div>
+          </div>
+          <!-- Mutual Friends -->
+          <div class="tool-card animate-in">
+            <div class="card-header"><h2>Find mutual friends</h2><span class="tech-badge green">BFS · Queue</span></div>
+            <div class="field-group">
+              <label>BETWEEN</label>
+              <div class="inline-fields">
+                <input type="text" placeholder="Alice" id="input-mutual-a">
+                <span class="divider">—</span>
+                <input type="text" placeholder="Eve" id="input-mutual-b">
+              </div>
+            </div>
+            <button class="btn btn-success full-width" id="btn-find-mutuals">Find mutuals</button>
+            <div class="results-container" id="mutuals-results"><p class="empty-msg">Select users to see mutual connections</p></div>
+          </div>
+          <!-- Suggestions -->
+          <div class="tool-card animate-in">
+            <div class="card-header"><h2>Suggest friends</h2><span class="tech-badge orange">Heap · priority</span></div>
+            <div class="field-group"><label>SUGGEST FOR</label><select id="select-suggest-user"><option value="" disabled selected>Select user...</option></select></div>
+            <button class="btn btn-warning full-width" id="btn-run-suggestions">Run suggestions</button>
+            <div class="suggestions-grid" id="suggestions-results"></div>
+          </div>
+        </div>
+
+        <!-- Dashboard Graph Preview -->
+        <div class="dashboard-graph-panel">
+          <div class="panel-header">
+            <h3>Network Graph</h3>
+            <a href="#" class="view-link" id="link-view-graph">Full view →</a>
+          </div>
+          <div class="dashboard-graph-canvas-wrap">
+            <canvas id="dashboard-graph-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="data-rows">
+          <div class="data-panel scroll-y">
+            <div class="panel-header"><h3>Connected users</h3><a href="#" class="view-link" id="link-view-users">View all →</a></div>
+            <div class="user-list" id="dashboard-user-list"></div>
+          </div>
+          <div class="data-panel scroll-y">
+            <div class="panel-header"><h3>Activity feed</h3><a href="#" class="view-link">See all →</a></div>
+            <div class="activity-feed" id="dashboard-activity-feed"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: USERS ═══════ -->
+      <div class="view-container" id="view-users">
+        <div class="view-header">
+          <h2>All Users</h2>
+          <p class="view-desc">Complete listing of all users in the network. Each user is stored in a <strong>HashMap</strong> for O(1) lookup.</p>
+        </div>
+        <div class="filter-bar">
+          <input type="text" placeholder="Filter users..." id="users-filter" class="filter-input">
+          <span class="result-count" id="users-result-count">0 users</span>
+        </div>
+        <div class="users-full-grid" id="users-full-list"></div>
+      </div>
+
+      <!-- ═══════ VIEW: ADD FRIENDSHIP ═══════ -->
+      <div class="view-container" id="view-add-friendship">
+        <div class="view-header">
+          <h2>Add Friendship</h2>
+          <p class="view-desc">Create a bidirectional edge in the <strong>Graph Adjacency List</strong>. Both users must already exist in the network.</p>
+        </div>
+        <div class="view-card-centered">
+          <div class="tool-card wide">
+            <div class="card-header"><h2>Connect Users</h2><span class="tech-badge blue">Graph edge</span></div>
+            <div class="field-group"><label>USER A</label><input type="text" placeholder="Enter username" id="page-friend-a"></div>
+            <div class="field-group"><label>USER B</label><input type="text" placeholder="Enter username" id="page-friend-b"></div>
+            <div class="btn-row">
+              <button class="btn btn-secondary flex-1" id="page-clear-friend">Clear</button>
+              <button class="btn btn-primary flex-1" id="page-add-friend">Connect</button>
+            </div>
+            <div class="toast" id="toast-page-friend"></div>
+          </div>
+          <div class="tool-card wide">
+            <div class="card-header"><h2>Existing Friendships</h2></div>
+            <div class="friendship-list" id="friendship-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: MUTUAL FRIENDS ═══════ -->
+      <div class="view-container" id="view-mutual-friends">
+        <div class="view-header">
+          <h2>Mutual Friends</h2>
+          <p class="view-desc">Compute mutual friends using <strong>Set Intersection</strong> of adjacency lists. Complexity: O(min(d<sub>a</sub>, d<sub>b</sub>)).</p>
+        </div>
+        <div class="view-card-centered">
+          <div class="tool-card wide">
+            <div class="card-header"><h2>Find Common Connections</h2><span class="tech-badge green">BFS · Queue</span></div>
+            <div class="field-group">
+              <label>BETWEEN</label>
+              <div class="inline-fields">
+                <input type="text" placeholder="User A" id="page-mutual-a">
+                <span class="divider">—</span>
+                <input type="text" placeholder="User B" id="page-mutual-b">
+              </div>
+            </div>
+            <button class="btn btn-success full-width" id="page-find-mutuals">Find mutuals</button>
+            <div class="results-container large" id="page-mutuals-results"><p class="empty-msg">Enter two usernames above</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: SUGGESTIONS ═══════ -->
+      <div class="view-container" id="view-suggestions">
+        <div class="view-header">
+          <h2>Friend Suggestions</h2>
+          <p class="view-desc">Uses <strong>BFS Level-2 Exploration</strong> to find friends-of-friends, then ranks candidates using a <strong>Max-Heap (Priority Queue)</strong>.</p>
+        </div>
+        <div class="view-card-centered">
+          <div class="tool-card wide">
+            <div class="card-header"><h2>Generate Suggestions</h2><span class="tech-badge orange">Heap · priority</span></div>
+            <div class="field-group"><label>SUGGEST FOR</label><select id="page-suggest-user"><option value="" disabled selected>Select user...</option></select></div>
+            <button class="btn btn-warning full-width" id="page-run-suggestions">Run suggestions</button>
+            <div class="suggestions-grid large" id="page-suggestions-results"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: BFS EXPLORER ═══════ -->
+      <div class="view-container" id="view-bfs-explorer">
+        <div class="view-header">
+          <h2>BFS Explorer</h2>
+          <p class="view-desc">Perform a <strong>Breadth-First Search</strong> from any user node and visualize the level-by-level traversal order.</p>
+        </div>
+        <div class="view-card-centered">
+          <div class="tool-card wide">
+            <div class="card-header"><h2>BFS Traversal</h2><span class="tech-badge blue">Queue</span></div>
+            <div class="field-group"><label>START NODE</label><select id="bfs-start-user"><option value="" disabled selected>Select starting user...</option></select></div>
+            <button class="btn btn-primary full-width" id="btn-run-bfs">Run BFS</button>
+            <div class="bfs-results" id="bfs-results"><p class="empty-msg">Select a user to start BFS traversal</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: NETWORK GRAPH ═══════ -->
+      <div class="view-container graph-view" id="view-network-graph">
+        <div class="graph-top-bar">
+          <div>
+            <h2 class="graph-title">Network Graph</h2>
+            <p class="graph-subtitle">Interactive force-directed visualization · drag nodes · hover to inspect</p>
+          </div>
+          <div class="graph-controls">
+            <button class="btn btn-secondary btn-xs" id="btn-graph-reset">⟳ Reset layout</button>
+            <button class="btn btn-secondary btn-xs" id="btn-graph-bfs-toggle">▶ Animate BFS</button>
+            <select id="graph-bfs-user" class="graph-select">
+              <option value="" disabled selected>BFS from user...</option>
+            </select>
+          </div>
+        </div>
+        <div class="graph-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>User node</span>
+          <span class="legend-item"><span class="legend-line"></span>Friendship edge</span>
+          <span class="legend-item"><span class="legend-dot glow" style="background:#f8fafc"></span>BFS Level 0</span>
+          <span class="legend-item"><span class="legend-dot glow" style="background:#6366f1"></span>BFS Level 1</span>
+          <span class="legend-item"><span class="legend-dot glow" style="background:#3b82f6"></span>BFS Level 2+</span>
+        </div>
+        <div class="graph-canvas-wrapper">
+          <canvas id="network-canvas"></canvas>
+        </div>
+        <div class="graph-stats-bar">
+          <span id="graph-stat-nodes">0 nodes</span>
+          <span class="graph-stat-sep">·</span>
+          <span id="graph-stat-edges">0 edges</span>
+          <span class="graph-stat-sep">·</span>
+          <span class="graph-hint">Drag to reposition · Hover for details</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
