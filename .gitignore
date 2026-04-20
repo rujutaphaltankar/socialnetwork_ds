@@ -1,0 +1,5 @@
+node_modules/
+.vite/
+*.class
+socialnetwork.db
+socialnetwork_data.dat
