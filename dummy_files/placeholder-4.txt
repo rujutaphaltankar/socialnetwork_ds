@@ -1,1 +1,2 @@
 This is a dummy file for repository housekeeping.
+Marker: text adjusted to create a safe follow-up commit.
