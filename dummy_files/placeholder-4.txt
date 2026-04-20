@@ -1,2 +1,3 @@
 This is a dummy file for repository housekeeping.
 Marker: text adjusted to create a safe follow-up commit.
+Final touch: summary text added for the closing placeholder edit.
