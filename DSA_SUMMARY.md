@@ -23,3 +23,35 @@ Used for **Friend Suggestions**:
 ## 4. Hash Tables (Maps)
 Used for user lookups:
 - Ensuring that retrieving a user's profile by their unique username is an $O(1)$ operation.
+
+## 5. Algorithm Logic (Pseudocode)
+
+### 5.1 Mutual Friends Discovery
+```text
+FUNCTION findMutualFriends(User A, User B):
+    List mutuals = []
+    Set friendsA = graph.getFriends(A)
+    Set friendsB = graph.getFriends(B)
+    
+    FOR EACH friend IN friendsA:
+        IF friendsB.contains(friend):
+            mutuals.add(friend)
+            
+    RETURN mutuals
+```
+
+### 5.2 Breadth-First Search (Traversal)
+```text
+FUNCTION BFS(StartNode):
+    Queue q = [StartNode]
+    Set visited = {StartNode}
+    
+    WHILE q is NOT empty:
+        current = q.pop()
+        PRINT current
+        
+        FOR EACH neighbor IN graph.getNeighbors(current):
+            IF neighbor NOT IN visited:
+                visited.add(neighbor)
+                q.push(neighbor)
+```
